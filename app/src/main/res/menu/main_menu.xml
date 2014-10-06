@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/input_language"
+        android:title="@string/input_language"
+        android:icon="@drawable/ic_input_language">
+        <menu>
+            <item
+                android:id="@+id/input_engUSA"
+                android:title="@string/engUSA"
+                android:icon="@drawable/ic_flag_usa"
+                />
+            <item
+                android:id="@+id/input_spaESP"
+                android:title="@string/spaESP"
+                android:icon="@drawable/ic_flag_esp"
+                />
+        </menu>
+    </item>
+    <item
+        android:id="@+id/output_language"
+        android:title="@string/output_language"
+        android:icon="@drawable/ic_output_language">
+        <menu>
+            <item
+                android:id="@+id/output_engUSA"
+                android:title="@string/engUSA"
+                android:icon="@drawable/ic_flag_usa"
+                />
+            <item
+                android:id="@+id/output_spaESP"
+                android:title="@string/spaESP"
+                android:icon="@drawable/ic_flag_esp"
+                />
+        </menu>
+    </item>
+</menu>

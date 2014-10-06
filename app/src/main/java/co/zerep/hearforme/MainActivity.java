@@ -1,12 +1,21 @@
 package co.zerep.hearforme;
 
 import android.app.Activity;
+import android.content.Context;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.WindowManager;
 import android.widget.TextView;
 
+import com.google.android.glass.media.Sounds;
+import com.google.android.glass.touchpad.Gesture;
+import com.google.android.glass.touchpad.GestureDetector;
 import com.nuance.nmdp.speechkit.Recognition;
 import com.nuance.nmdp.speechkit.Recognizer;
 import com.nuance.nmdp.speechkit.SpeechError;
@@ -20,6 +29,8 @@ public class MainActivity extends Activity implements Recognizer.Listener {
     private static final String SPEECH_KIT_URL = "sslsandbox.nmdp.nuancemobility.net";
     private static final int SPEECH_KIT_PORT = 443;
 
+    private GestureDetector mGestureDetector;
+    private AudioManager mAudioManager;
     private TextView mTextView;
     private SpeechKit mSpeechKit;
     private Recognizer mRecognizer;
@@ -33,7 +44,12 @@ public class MainActivity extends Activity implements Recognizer.Listener {
 
         setContentView(R.layout.activity_main);
 
+        mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        mGestureDetector = createGestureDetector(this);
+
         mTextView = (TextView) findViewById(R.id.hello_world_text);
+
+
 
         mSpeechKit = SpeechKit.initialize(this,
                 SPEECH_KIT_APP_ID,
@@ -50,9 +66,42 @@ public class MainActivity extends Activity implements Recognizer.Listener {
         mRecognizer.start();
     }
 
+    private GestureDetector createGestureDetector(Context context) {
+        GestureDetector gestureDetector = new GestureDetector(context);
+        gestureDetector.setBaseListener(new GestureDetector.BaseListener() {
+            @Override
+            public boolean onGesture(Gesture gesture) {
+                if (gesture == Gesture.TAP) {
+                    mAudioManager.playSoundEffect(Sounds.TAP);
+                    openOptionsMenu();
+                    return true;
+                }
+                return false;
+            }
+        });
+        return gestureDetector;
+    }
+
     @Override
     protected void onDestroy() {
        super.onDestroy();
+    }
+    
+    @Override
+    public boolean onCreatePanelMenu(int featureId, Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    /*
+     * Send generic motion events to the gesture detector
+     */
+    @Override
+    public boolean onGenericMotionEvent(MotionEvent event) {
+        if (mGestureDetector != null) {
+            return mGestureDetector.onMotionEvent(event);
+        }
+        return false;
     }
 
     @Override
@@ -81,4 +130,5 @@ public class MainActivity extends Activity implements Recognizer.Listener {
     public void onError(Recognizer recognizer, SpeechError speechError) {
         Log.d(TAG, "onERROR: " + speechError.getErrorDetail());
     }
+
 }
