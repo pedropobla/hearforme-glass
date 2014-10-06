@@ -5,5 +5,6 @@
     <string name="title_activity_main">MainActivity</string>
     <string name="hello_world">Hello world!</string>
     <string name="voice_trigger">Hear For Me</string>
+    <string name="speech_prompt">Say something&#8230;</string>
 
 </resources>

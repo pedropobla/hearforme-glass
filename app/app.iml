@@ -80,6 +80,8 @@
     </content>
     <orderEntry type="jdk" jdkName="Android 4.4.2 Glass Development Kit Preview" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" exported="" name="nmdp_speech_kit" level="project" />
+    <orderEntry type="library" exported="" name="mylib" level="project" />
   </component>
 </module>
 
