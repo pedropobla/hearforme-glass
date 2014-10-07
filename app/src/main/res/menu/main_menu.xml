@@ -8,12 +8,12 @@
         <menu>
             <item
                 android:id="@+id/input_engUSA"
-                android:title="@string/engUSA"
+                android:title="@string/engUSA_description"
                 android:icon="@drawable/ic_flag_usa"
                 />
             <item
                 android:id="@+id/input_spaESP"
-                android:title="@string/spaESP"
+                android:title="@string/spaESP_description"
                 android:icon="@drawable/ic_flag_esp"
                 />
         </menu>
@@ -25,12 +25,12 @@
         <menu>
             <item
                 android:id="@+id/output_engUSA"
-                android:title="@string/engUSA"
+                android:title="@string/engUSA_description"
                 android:icon="@drawable/ic_flag_usa"
                 />
             <item
                 android:id="@+id/output_spaESP"
-                android:title="@string/spaESP"
+                android:title="@string/spaESP_description"
                 android:icon="@drawable/ic_flag_esp"
                 />
         </menu>

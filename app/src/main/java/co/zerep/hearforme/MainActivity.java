@@ -7,9 +7,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
-import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.WindowManager;
 import android.widget.TextView;
 
@@ -20,6 +19,8 @@ import com.nuance.nmdp.speechkit.Recognition;
 import com.nuance.nmdp.speechkit.Recognizer;
 import com.nuance.nmdp.speechkit.SpeechError;
 import com.nuance.nmdp.speechkit.SpeechKit;
+
+import java.util.List;
 
 public class MainActivity extends Activity implements Recognizer.Listener {
 
@@ -34,6 +35,11 @@ public class MainActivity extends Activity implements Recognizer.Listener {
     private TextView mTextView;
     private SpeechKit mSpeechKit;
     private Recognizer mRecognizer;
+    private Settings mSettings;
+    private String mInputLanguage;
+    private String mOutputLanguage;
+    private final int DEFAULT_INPUT_LANGUAGE = R.string.engUSA_code;
+    private final int DEFAULT_OUTPUT_LANGUAGE = R.string.spaESP_code;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +49,16 @@ public class MainActivity extends Activity implements Recognizer.Listener {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         setContentView(R.layout.activity_main);
+
+        mSettings = new Settings(this);
+
+        if (!mSettings.hasInputLanguage()) mSettings.createInputLanguage(DEFAULT_INPUT_LANGUAGE);
+        if (!mSettings.hasOutputLanguage()) mSettings.createOutputLanguage(DEFAULT_OUTPUT_LANGUAGE);
+
+        mInputLanguage = mSettings.getInputLanguage();
+        mOutputLanguage = mSettings.getOutputLanguage();
+        Log.d(TAG, "INITIAL INPUT LANGUAGE: " + mInputLanguage);
+        Log.d(TAG, "INITIAL OUTPUT LANGUAGE: " + mOutputLanguage);
 
         mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         mGestureDetector = createGestureDetector(this);
@@ -61,7 +77,7 @@ public class MainActivity extends Activity implements Recognizer.Listener {
 
         mRecognizer = mSpeechKit.createRecognizer(Recognizer.RecognizerType.Dictation,
                 Recognizer.EndOfSpeechDetection.Short,
-                "eng-USA", this, new Handler());
+                mInputLanguage, this, new Handler());
 
         mRecognizer.start();
     }
@@ -84,13 +100,41 @@ public class MainActivity extends Activity implements Recognizer.Listener {
 
     @Override
     protected void onDestroy() {
-       super.onDestroy();
+        super.onDestroy();
     }
     
     @Override
     public boolean onCreatePanelMenu(int featureId, Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
         return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.input_engUSA:
+                mSettings.setInputLanguage(R.string.engUSA_code);
+                mInputLanguage = mSettings.getInputLanguage();
+                Log.d(TAG, "INPUT LANGUAGE CHANGED: " + mInputLanguage);
+                return true;
+            case R.id.input_spaESP:
+                mSettings.setInputLanguage(R.string.spaESP_code);
+                mInputLanguage = mSettings.getInputLanguage();
+                Log.d(TAG, "INPUT LANGUAGE CHANGED: " + mInputLanguage);
+                return true;
+            case R.id.output_engUSA:
+                mSettings.setOutputLanguage(R.string.engUSA_code);
+                mOutputLanguage = mSettings.getOutputLanguage();
+                Log.d(TAG, "OUTPUT LANGUAGE CHANGED: " + mOutputLanguage);
+                return true;
+            case R.id.output_spaESP:
+                mSettings.setOutputLanguage(R.string.spaESP_code);
+                mOutputLanguage = mSettings.getOutputLanguage();
+                Log.d(TAG, "OUTPUT LANGUAGE CHANGED: " + mOutputLanguage);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     /*

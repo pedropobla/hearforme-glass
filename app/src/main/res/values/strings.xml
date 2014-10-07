@@ -6,7 +6,8 @@
     <string name="voice_trigger">Hear For Me</string>
     <string name="input_language">Input language</string>
     <string name="output_language">Output language</string>
-    <string name="spaESP">Spanish (Spain)</string>
-    <string name="engUSA">English (USA)</string>
-
+    <string name="spaESP_code">spa-ESP</string>
+    <string name="spaESP_description">Spanish (Spain)</string>
+    <string name="engUSA_code">eng-USA</string>
+    <string name="engUSA_description">English (USA)</string>
 </resources>
