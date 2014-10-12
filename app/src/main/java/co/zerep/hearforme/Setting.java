@@ -1,8 +1,5 @@
 package co.zerep.hearforme;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class Setting {
     private int id;
     private int value;

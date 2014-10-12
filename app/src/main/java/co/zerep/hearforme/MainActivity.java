@@ -20,8 +20,6 @@ import com.nuance.nmdp.speechkit.Recognizer;
 import com.nuance.nmdp.speechkit.SpeechError;
 import com.nuance.nmdp.speechkit.SpeechKit;
 
-import java.util.List;
-
 public class MainActivity extends Activity implements Recognizer.Listener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
