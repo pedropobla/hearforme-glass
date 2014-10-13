@@ -20,6 +20,8 @@ import com.nuance.nmdp.speechkit.Recognizer;
 import com.nuance.nmdp.speechkit.SpeechError;
 import com.nuance.nmdp.speechkit.SpeechKit;
 
+import co.zerep.hearforme.languages.Languages;
+import co.zerep.hearforme.languages.language.Language;
 import co.zerep.hearforme.settings.SettingsController;
 
 public class MainActivity extends Activity implements Recognizer.Listener {
@@ -35,11 +37,10 @@ public class MainActivity extends Activity implements Recognizer.Listener {
     private TextView mTextView;
     private SpeechKit mSpeechKit;
     private Recognizer mRecognizer;
-    private SettingsController mSettings;
-    private String mInputLanguage;
-    private String mOutputLanguage;
-    private final int DEFAULT_INPUT_LANGUAGE = R.string.engUSA_code;
-    private final int DEFAULT_OUTPUT_LANGUAGE = R.string.spaESP_code;
+    private Language mInputLanguage;
+    private Language mOutputLanguage;
+    private final Language DEFAULT_INPUT_LANGUAGE = Languages.IN_ENGLISH_USA;
+    private final Language DEFAULT_OUTPUT_LANGUAGE = Languages.OUT_SPANISH;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,13 +51,13 @@ public class MainActivity extends Activity implements Recognizer.Listener {
 
         setContentView(R.layout.activity_main);
 
-        mSettings = new SettingsController(this);
+        if (!SettingsController.hasInputLanguage())
+            SettingsController.createInputLanguage(DEFAULT_INPUT_LANGUAGE);
+        if (!SettingsController.hasOutputLanguage())
+            SettingsController.createOutputLanguage(DEFAULT_OUTPUT_LANGUAGE);
 
-        if (!mSettings.hasInputLanguage()) mSettings.createInputLanguage(DEFAULT_INPUT_LANGUAGE);
-        if (!mSettings.hasOutputLanguage()) mSettings.createOutputLanguage(DEFAULT_OUTPUT_LANGUAGE);
-
-        mInputLanguage = mSettings.getInputLanguage();
-        mOutputLanguage = mSettings.getOutputLanguage();
+        mInputLanguage = SettingsController.getInputLanguage();
+        mOutputLanguage = SettingsController.getOutputLanguage();
         Log.d(TAG, "INITIAL INPUT LANGUAGE: " + mInputLanguage);
         Log.d(TAG, "INITIAL OUTPUT LANGUAGE: " + mOutputLanguage);
 
@@ -77,7 +78,7 @@ public class MainActivity extends Activity implements Recognizer.Listener {
 
         mRecognizer = mSpeechKit.createRecognizer(Recognizer.RecognizerType.Dictation,
                 Recognizer.EndOfSpeechDetection.Short,
-                mInputLanguage, this, new Handler());
+                mInputLanguage.getCode(), this, new Handler());
 
         mRecognizer.start();
     }
@@ -105,35 +106,39 @@ public class MainActivity extends Activity implements Recognizer.Listener {
     
     @Override
     public boolean onCreatePanelMenu(int featureId, Menu menu) {
-        getMenuInflater().inflate(R.menu.main_menu, menu);
+        Menu in = menu.addSubMenu(R.string.input_language).setIcon(R.drawable.ic_input_language);
+        for (Language lang : Languages.getInputLanguages()) {
+            in.add(Menu.NONE, lang.getMenuId(), Menu.NONE, lang.getName()).setIcon(lang.getFlag());
+        }
+
+        if (mInputLanguage.isTranslatable()) { // TODO: Si no es, mostrar la opción, y mostrar un error al darle
+            Menu out = menu.addSubMenu(R.string.output_language).setIcon(R.drawable.ic_output_language);
+            for (Language lang : Languages.getOutputLanguages()) {
+                out.add(Menu.NONE, lang.getMenuId(), Menu.NONE, lang.getName()).setIcon(lang.getFlag());
+            }
+        }
         return true;
+//        getMenuInflater().inflate(R.menu.main_menu, menu);
+//        return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.input_engUSA:
-                mSettings.setInputLanguage(R.string.engUSA_code);
-                mInputLanguage = mSettings.getInputLanguage();
+        Language lang = Languages.getLanguageFromMenuId(item.getItemId());
+        if (lang != null) {
+            if (lang.getType() == Language.Type.INPUT) {
+                SettingsController.setInputLanguage(lang);
+                mInputLanguage = SettingsController.getInputLanguage();
                 Log.d(TAG, "INPUT LANGUAGE CHANGED: " + mInputLanguage);
-                return true;
-            case R.id.input_spaESP:
-                mSettings.setInputLanguage(R.string.spaESP_code);
-                mInputLanguage = mSettings.getInputLanguage();
-                Log.d(TAG, "INPUT LANGUAGE CHANGED: " + mInputLanguage);
-                return true;
-            case R.id.output_engUSA:
-                mSettings.setOutputLanguage(R.string.engUSA_code);
-                mOutputLanguage = mSettings.getOutputLanguage();
+            } else if(lang.getType() == Language.Type.OUTPUT) {
+                SettingsController.setOutputLanguage(lang);
+                mOutputLanguage = SettingsController.getOutputLanguage();
                 Log.d(TAG, "OUTPUT LANGUAGE CHANGED: " + mOutputLanguage);
-                return true;
-            case R.id.output_spaESP:
-                mSettings.setOutputLanguage(R.string.spaESP_code);
-                mOutputLanguage = mSettings.getOutputLanguage();
-                Log.d(TAG, "OUTPUT LANGUAGE CHANGED: " + mOutputLanguage);
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+            }
+            invalidateOptionsMenu();
+            return true;
+        } else {
+            return super.onOptionsItemSelected(item);
         }
     }
 

@@ -1,27 +1,27 @@
 package co.zerep.hearforme.settings.setting;
 
 public class SettingModel {
-    private int id;
-    private int value;
+    private String id;
+    private String value;
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public int getValue() {
+    public String getValue() {
         return value;
     }
 
-    public void setValue(int value) {
+    public void setValue(String value) {
         this.value = value;
     }
 
-    @Override
-    public String toString() {
-        return String.valueOf(value);
+    public SettingModel(String id, String value) {
+        this.id = id;
+        this.value = value;
     }
 }
