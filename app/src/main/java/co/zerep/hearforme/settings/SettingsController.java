@@ -1,17 +1,20 @@
-package co.zerep.hearforme;
+package co.zerep.hearforme.settings;
 
 import android.content.Context;
 
-public class Settings {
+import co.zerep.hearforme.R;
+import co.zerep.hearforme.settings.setting.SettingDataSource;
+
+public class SettingsController {
     private static final int INPUT_LANGUAGE_ID = R.string.input_language;
     private static final int OUTPUT_LANGUAGE_ID = R.string.output_language;
 
     private Context context;
-    private SettingsDataSource settingsData;
+    private SettingDataSource settingsData;
 
-    public Settings(Context context) {
+    public SettingsController(Context context) {
         this.context = context;
-        this.settingsData = new SettingsDataSource(context);
+        this.settingsData = new SettingDataSource(context);
         settingsData.open();
     }
 

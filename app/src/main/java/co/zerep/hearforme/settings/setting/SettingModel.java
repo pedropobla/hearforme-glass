@@ -1,6 +1,6 @@
-package co.zerep.hearforme;
+package co.zerep.hearforme.settings.setting;
 
-public class Setting {
+public class SettingModel {
     private int id;
     private int value;
 

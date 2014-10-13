@@ -20,6 +20,8 @@ import com.nuance.nmdp.speechkit.Recognizer;
 import com.nuance.nmdp.speechkit.SpeechError;
 import com.nuance.nmdp.speechkit.SpeechKit;
 
+import co.zerep.hearforme.settings.SettingsController;
+
 public class MainActivity extends Activity implements Recognizer.Listener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -33,7 +35,7 @@ public class MainActivity extends Activity implements Recognizer.Listener {
     private TextView mTextView;
     private SpeechKit mSpeechKit;
     private Recognizer mRecognizer;
-    private Settings mSettings;
+    private SettingsController mSettings;
     private String mInputLanguage;
     private String mOutputLanguage;
     private final int DEFAULT_INPUT_LANGUAGE = R.string.engUSA_code;
@@ -48,7 +50,7 @@ public class MainActivity extends Activity implements Recognizer.Listener {
 
         setContentView(R.layout.activity_main);
 
-        mSettings = new Settings(this);
+        mSettings = new SettingsController(this);
 
         if (!mSettings.hasInputLanguage()) mSettings.createInputLanguage(DEFAULT_INPUT_LANGUAGE);
         if (!mSettings.hasOutputLanguage()) mSettings.createOutputLanguage(DEFAULT_OUTPUT_LANGUAGE);
