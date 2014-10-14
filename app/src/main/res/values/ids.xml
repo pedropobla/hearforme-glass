@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="input_language" type="id" />
+    <item name="output_language" type="id" />
+
+    <item name="input_araEGY" type="id" />
+    <item name="input_araSAU" type="id" />
+    <item name="input_araXWW" type="id" />
+    <item name="input_indIDN" type="id" />
+    <item name="input_yueCHN" type="id" />
+    <item name="input_catESP" type="id" />
+    <item name="input_hrvHRV" type="id" />
+    <item name="input_cesCZE" type="id" />
+    <item name="input_danDNK" type="id" />
+    <item name="input_nldNLD" type="id" />
+    <item name="input_engAUS" type="id" />
+    <item name="input_engGBR" type="id" />
+    <item name="input_engUSA" type="id" />
+    <item name="input_engIND" type="id" />
+    <item name="input_finFIN" type="id" />
+    <item name="input_fraCAN" type="id" />
+    <item name="input_fraFRA" type="id" />
+    <item name="input_deuDEU" type="id" />
+    <item name="input_ellGRC" type="id" />
+    <item name="input_hebISR" type="id" />
+    <item name="input_hinIND" type="id" />
+    <item name="input_hunHUN" type="id" />
+    <item name="input_itaITA" type="id" />
+    <item name="input_jpnJPN" type="id" />
+    <item name="input_korKOR" type="id" />
+    <item name="input_zlmMYS" type="id" />
+    <item name="input_cmnCHN" type="id" />
+    <item name="input_cmnTWN" type="id" />
+    <item name="input_norNOR" type="id" />
+    <item name="input_polPOL" type="id" />
+    <item name="input_porBRA" type="id" />
+    <item name="input_porPRT" type="id" />
+    <item name="input_ronROU" type="id" />
+    <item name="input_rusRUS" type="id" />
+    <item name="input_slkSVK" type="id" />
+    <item name="input_spaESP" type="id" />
+    <item name="input_spaXLA" type="id" />
+    <item name="input_sweSWE" type="id" />
+    <item name="input_thaTHA" type="id" />
+    <item name="input_turTUR" type="id" />
+    <item name="input_ukrUKR" type="id" />
+    <item name="input_vieVNM" type="id" />
+
+    <item name="output_spaESP" type="id" />
+</resources>

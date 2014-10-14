@@ -2,7 +2,7 @@ package co.zerep.hearforme.languages.language;
 
 import android.graphics.drawable.Drawable;
 
-public class Language {
+public class Language implements Comparable<Language> {
     public static enum Type {INPUT, OUTPUT};
 
     private Type type;
@@ -48,5 +48,10 @@ public class Language {
     @Override
     public String toString() {
         return code;
+    }
+
+    @Override
+    public int compareTo(Language other) {
+        return this.getName().compareTo(other.getName());
     }
 }

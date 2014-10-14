@@ -3,9 +3,50 @@
 
     <string name="app_name">HearForMe</string>
     <string name="voice_trigger">Hear For Me</string>
+
     <string name="input_language">Input language</string>
     <string name="output_language">Output language</string>
-    <string name="spaESP">Spanish (Spain)</string>
-    <string name="engUSA">English (USA)</string>
+
+    <string name="araEGY">Arabic (Egypt)</string>
+    <string name="araSAU">Arabic (Saudi Arabia)</string>
+    <string name="araXWW">Arabic (International)</string>
+    <string name="indIDN">Bahasa (Indonesia)</string>
     <string name="yueCHN">Cantonese (Simplified)</string>
+    <string name="catESP">Catalan</string>
+    <string name="hrvHRV">Croatian </string>
+    <string name="cesCZE">Czech</string>
+    <string name="danDNK">Danish</string>
+    <string name="nldNLD">Dutch</string>
+    <string name="engAUS">English (Australia)</string>
+    <string name="engGBR">English (GB)</string>
+    <string name="engUSA">English (US)</string>
+    <string name="engIND">English (India)</string>
+    <string name="finFIN">Finnish</string>
+    <string name="fraCAN">French (Canada)</string>
+    <string name="fraFRA">French (France)</string>
+    <string name="deuDEU">German</string>
+    <string name="ellGRC">Greek</string>
+    <string name="hebISR">Hebrew</string>
+    <string name="hinIND">Hindi</string>
+    <string name="hunHUN">Hungarian</string>
+    <string name="itaITA">Italian</string>
+    <string name="jpnJPN">Japanese</string>
+    <string name="korKOR">Korean</string>
+    <string name="zlmMYS">Malay</string>
+    <string name="cmnCHN">Mandarin (Simplified)</string>
+    <string name="cmnTWN">Mandarin (Traditional)</string>
+    <string name="norNOR">Norwegian</string>
+    <string name="polPOL">Polish</string>
+    <string name="porBRA">Portuguese (Brazil)</string>
+    <string name="porPRT">Portuguese (Portugal)</string>
+    <string name="ronROU">Romanian</string>
+    <string name="rusRUS">Russian</string>
+    <string name="slkSVK">Slovak</string>
+    <string name="spaESP">Spanish (Spain)</string>
+    <string name="spaXLA">Spanish (LatAm)</string>
+    <string name="sweSWE">Swedish</string>
+    <string name="thaTHA">Thai</string>
+    <string name="turTUR">Turkish</string>
+    <string name="ukrUKR">Ukrainian</string>
+    <string name="vieVNM">Vietnamese</string>
 </resources>

@@ -111,15 +111,16 @@ public class MainActivity extends Activity implements Recognizer.Listener {
             in.add(Menu.NONE, lang.getMenuId(), Menu.NONE, lang.getName()).setIcon(lang.getFlag());
         }
 
-        if (mInputLanguage.isTranslatable()) { // TODO: Si no es, mostrar la opción, y mostrar un error al darle
+        if (mInputLanguage.isTranslatable()) {
             Menu out = menu.addSubMenu(R.string.output_language).setIcon(R.drawable.ic_output_language);
             for (Language lang : Languages.getOutputLanguages()) {
                 out.add(Menu.NONE, lang.getMenuId(), Menu.NONE, lang.getName()).setIcon(lang.getFlag());
             }
+        } else {
+            menu.add(Menu.NONE, R.string.output_language, Menu.NONE, R.string.output_language).
+                    setIcon(R.drawable.ic_output_language).setEnabled(false);
         }
         return true;
-//        getMenuInflater().inflate(R.menu.main_menu, menu);
-//        return true;
     }
 
     @Override
@@ -129,6 +130,7 @@ public class MainActivity extends Activity implements Recognizer.Listener {
             if (lang.getType() == Language.Type.INPUT) {
                 SettingsController.setInputLanguage(lang);
                 mInputLanguage = SettingsController.getInputLanguage();
+                if(!mInputLanguage.isTranslatable()) mOutputLanguage = null; // TODO: Check null
                 Log.d(TAG, "INPUT LANGUAGE CHANGED: " + mInputLanguage);
             } else if(lang.getType() == Language.Type.OUTPUT) {
                 SettingsController.setOutputLanguage(lang);
