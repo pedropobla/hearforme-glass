@@ -6,7 +6,9 @@
 
     <string name="input_language">Input language</string>
     <string name="output_language">Output language</string>
+    <string name="output_language_not_available">The input language you selected can\'t be translated</string>
 
+    <string name="none">Don\'t translate</string>
     <string name="araEGY">Arabic (Egypt)</string>
     <string name="araSAU">Arabic (Saudi Arabia)</string>
     <string name="araXWW">Arabic (International)</string>

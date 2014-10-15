@@ -47,4 +47,5 @@
     <item name="input_vieVNM" type="id" />
 
     <item name="output_spaESP" type="id" />
+    <item name="output_none" type="id" />
 </resources>

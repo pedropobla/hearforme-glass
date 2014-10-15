@@ -2,6 +2,8 @@ package co.zerep.hearforme.languages;
 
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,6 +41,9 @@ public class Languages {
     public static Language OUT_SPANISH = new Language(Language.Type.OUTPUT, "es",
             res.getString(R.string.spaESP), res.getDrawable(R.drawable.ic_flag_spaesp),
             R.id.output_spaESP, false);
+    public static Language NONE = new Language(Language.Type.OUTPUT, "",
+            res.getString(R.string.none), res.getDrawable(R.drawable.ic_launcher),
+            R.id.output_none, false);
 
     static {
         for (int i = 0; i < inputLanguagesCodes.length(); ++i) {
@@ -48,6 +53,7 @@ public class Languages {
                     inputLanguagesTranslatables.getBoolean(i, false)));
         }
 
+        OUTPUT_LANGUAGES.add(NONE);
         OUTPUT_LANGUAGES.add(OUT_SPANISH);
 
         Collections.sort(INPUT_LANGUAGES);

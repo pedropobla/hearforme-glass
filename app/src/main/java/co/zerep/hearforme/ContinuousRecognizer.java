@@ -27,8 +27,8 @@ public class ContinuousRecognizer implements Runnable, Recognizer.Listener {
     private Status status[];
     private MainActivity mainActivity;
 
-    public ContinuousRecognizer(MainActivity mainActivity, String langCode) {
-        this.speechKit = SpeechKit.initialize(mainActivity,
+    public ContinuousRecognizer(MainActivity mainActivity) {
+        this.speechKit = SpeechKit.initialize(mainActivity.getApplication().getApplicationContext(),
                 SPEECH_KIT_APP_ID,
                 SPEECH_KIT_URL,
                 SPEECH_KIT_PORT,
@@ -36,9 +36,13 @@ public class ContinuousRecognizer implements Runnable, Recognizer.Listener {
                 SPEECH_KIT_APP_KEY);
         speechKit.connect();
         this.mainActivity = mainActivity;
-        this.langCode = langCode;
+        this.langCode = "";
         this.recognizers = new Recognizer[2];
         this.status = new Status[] {Status.IDLE, Status.IDLE};
+    }
+
+    public void setLangCode(String langCode) {
+        this.langCode = langCode;
     }
 
     @Override
