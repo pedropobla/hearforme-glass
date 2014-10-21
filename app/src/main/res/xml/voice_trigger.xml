@@ -1,2 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<trigger keyword="@string/voice_trigger" />
+<trigger keyword="@string/voice_trigger">
+    <constraints network="true" microphone="true" />
+</trigger>

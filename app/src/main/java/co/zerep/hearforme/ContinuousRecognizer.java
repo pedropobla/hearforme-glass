@@ -14,7 +14,7 @@ public class ContinuousRecognizer implements Runnable, Recognizer.Listener {
     private enum Status {RECORDING, PROCESSING, IDLE};
     private static final String TAG = ContinuousRecognizer.class.getSimpleName();
 
-    private volatile boolean running = true;
+    private volatile boolean running = true, active = true;
 
     private static final String SPEECH_KIT_APP_ID = PrivateKeys.SPEECH_KIT_APP_ID;
     private static final byte[] SPEECH_KIT_APP_KEY = PrivateKeys.SPEECH_KIT_APP_KEY;
@@ -95,11 +95,31 @@ public class ContinuousRecognizer implements Runnable, Recognizer.Listener {
             Log.d(TAG, "onError 1");
             status[1] = Status.IDLE;
         }
-        Log.d(TAG, "ERROR " + speechError.getErrorCode() + ": " + speechError.getErrorDetail());
-        Log.d(TAG, "SUGGESTION: " + speechError.getSuggestion());
+        Log.d(TAG, "Error " + speechError.getErrorCode() + ": " + speechError.getErrorDetail());
+        Log.d(TAG, "Suggestion: " + speechError.getSuggestion());
+    }
+
+    public void pause() {
+        Log.d(TAG, "Pause.");
+        active = false;
+        for (Recognizer recognizer : recognizers) {
+            if (recognizer != null) {
+                recognizer.stopRecording();
+                recognizer.cancel();
+            }
+        }
+        recognizers = new Recognizer[2];
+        status = new Status[] {Status.IDLE, Status.IDLE};
+    }
+
+    public void resume() {
+        Log.d(TAG, "Resume.");
+        active = true;
     }
 
     public void terminate() {
+        Log.d(TAG, "Terminate.");
+        active = false;
         running = false;
         for (Recognizer recognizer : recognizers) {
             if (recognizer != null) {
@@ -114,26 +134,24 @@ public class ContinuousRecognizer implements Runnable, Recognizer.Listener {
     @Override
     public void run() {
         while(running) {
-            if (status[0] == Status.IDLE && status[1] != Status.RECORDING) {
-                startRecording(0);
+            if (active) {
+                if (status[0] == Status.IDLE && status[1] != Status.RECORDING) {
+                    startRecording(0);
+                }
+//                else if (status[1] == Status.IDLE && status[0] != Status.RECORDING) {
+//                    startRecording(1);
+//                }
             }
-//            else if (status[1] == Status.IDLE && status[0] != Status.RECORDING) {
-//                startRecording(1);
-//            }
         }
     }
 
     private void startRecording(int index) {
-        Log.d(TAG, "Starting " + index + "...");
         status[index] = Status.RECORDING;
-        Log.d(TAG, index + " is not NULL yet.");
         recognizers[index] = null;
-        Log.d(TAG, index + " is NULL.");
         recognizers[index] = speechKit.createRecognizer(Recognizer.RecognizerType.Dictation,
                 Recognizer.EndOfSpeechDetection.Short,
                 langCode, this, new Handler(Looper.getMainLooper()));
-        Log.d(TAG, index + " is a new recognizer now.");
         recognizers[index].start();
-        Log.d(TAG, index + " started.");
+        Log.d(TAG, "Recognizer " + index + " started.");
     }
 }

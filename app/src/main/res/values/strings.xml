@@ -3,12 +3,17 @@
 
     <string name="app_name">HearForMe</string>
     <string name="voice_trigger">Hear For Me</string>
-
     <string name="input_language">Input language</string>
     <string name="output_language">Output language</string>
     <string name="output_language_not_available">The input language you selected can\'t be translated</string>
-
     <string name="none">Don\'t translate</string>
+    <string name="title_activity_no_internet">NoInternetActivity</string>
+    <string name="title_activity_overlay_alert">OverlayAlertActivity</string>
+    <string name="no_internet_alert">No network connectivity</string>
+    <string name="no_internet_alert_description">Tap to view connectivity status</string>
+    <string name="overlay_failure">You are still offline</string>
+    <string name="overlay_success">...and we are back!</string>
+
     <string name="araEGY">Arabic (Egypt)</string>
     <string name="araSAU">Arabic (Saudi Arabia)</string>
     <string name="araXWW">Arabic (International)</string>

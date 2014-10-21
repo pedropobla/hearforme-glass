@@ -2,11 +2,14 @@ package co.zerep.hearforme;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.AudioManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -24,9 +27,10 @@ import co.zerep.hearforme.languages.Languages;
 import co.zerep.hearforme.languages.language.Language;
 import co.zerep.hearforme.settings.SettingsController;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements NetworkStateReceiver.NetworkStateReceiverListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+    private static final int REQUEST_NO_INTERNET_ALERT = 0;
 
     private GestureDetector mGestureDetector;
     private AudioManager mAudioManager;
@@ -34,11 +38,12 @@ public class MainActivity extends Activity {
     private ImageView mInputLanguageFlag;
     private ImageView mRightArrow;
     private ImageView mOutputLanguageFlag;
-    private LayoutInflater mInflater;
     private ContinuousRecognizer mRecognizer;
     private Thread mRecognizerThread;
     private Language mInputLanguage;
     private Language mOutputLanguage;
+    private ConnectivityManager mConnectivityManager;
+    private NetworkStateReceiver mNetworkStateReceiver;
     private final Language DEFAULT_INPUT_LANGUAGE = Languages.IN_ENGLISH_USA;
     private final Language DEFAULT_OUTPUT_LANGUAGE = Languages.OUT_SPANISH;
 
@@ -49,8 +54,11 @@ public class MainActivity extends Activity {
         // Ensure screen stays on.
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        mInflater = LayoutInflater.from(this);
-        setContentView(mInflater.inflate(R.layout.activity_main, null));
+        mConnectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        mNetworkStateReceiver = new NetworkStateReceiver();
+        mNetworkStateReceiver.addListener(this);
+
+        setContentView(R.layout.activity_main);
 
         mTextView = (TextView) findViewById(R.id.main_view_text);
         mTextView.setMovementMethod(ScrollingMovementMethod.getInstance());
@@ -73,51 +81,35 @@ public class MainActivity extends Activity {
 
         setInputLanguage(SettingsController.getInputLanguage());
         setOutputLanguage(SettingsController.getOutputLanguage());
-        Log.d(TAG, "INITIAL INPUT LANGUAGE: " + mInputLanguage);
-        Log.d(TAG, "INITIAL OUTPUT LANGUAGE: " + mOutputLanguage);
 
         mRecognizerThread.start();
     }
 
-    private GestureDetector createGestureDetector(Context context) {
-        GestureDetector gestureDetector = new GestureDetector(context);
-        gestureDetector.setBaseListener(new GestureDetector.BaseListener() {
-            @Override
-            public boolean onGesture(Gesture gesture) {
-                if (gesture == Gesture.TAP) {
-                    mAudioManager.playSoundEffect(Sounds.TAP);
-                    openOptionsMenu();
-                    return true;
-                }
-                return false;
+    @Override
+    protected void onPause() {
+        if (mRecognizer != null) {
+            mRecognizer.pause();
+        }
+        if (mNetworkStateReceiver != null) {
+            try {
+                unregisterReceiver(mNetworkStateReceiver);
+            } catch (IllegalArgumentException iae) {
+                Log.e(TAG, "Tried to unregister an already-unregistered receiver.");
             }
-        });
-        return gestureDetector;
+        }
+        super.onPause();
     }
 
-    private void setInputLanguage(Language lang) {
-        Log.d(TAG, "INPUT LANGUAGE CHANGED: " + lang);
-        SettingsController.setInputLanguage(lang);
-        mInputLanguage = lang;
-        mRecognizer.setLangCode(lang.getCode());
-        mInputLanguageFlag.setImageDrawable(lang.getFlag());
-        if(!lang.isTranslatable()) setOutputLanguage(Languages.NONE); // TODO: Check null
-    }
-
-    private void setOutputLanguage(Language lang) {
-        SettingsController.setOutputLanguage(lang);
-        mOutputLanguage = lang;
-        if (lang == Languages.NONE) {
-            mOutputLanguageFlag.setImageDrawable(mInputLanguage.getFlag());
-            mRightArrow.setVisibility(View.GONE);
-            mOutputLanguageFlag.setVisibility(View.GONE);
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mNetworkStateReceiver != null) {
+            registerReceiver(mNetworkStateReceiver,
+                    new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
         }
-        else {
-            mOutputLanguageFlag.setImageDrawable(lang.getFlag());
-            mRightArrow.setVisibility(View.VISIBLE);
-            mOutputLanguageFlag.setVisibility(View.VISIBLE);
+        if (mRecognizer != null) {
+            mRecognizer.resume();
         }
-        Log.d(TAG, "OUTPUT LANGUAGE CHANGED: " + lang);
     }
 
     @Override
@@ -129,6 +121,9 @@ public class MainActivity extends Activity {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+        }
+        if (mNetworkStateReceiver != null) {
+            mNetworkStateReceiver.removeListener(this);
         }
         super.onDestroy();
     }
@@ -188,7 +183,88 @@ public class MainActivity extends Activity {
         return false;
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_NO_INTERNET_ALERT) {
+            Intent overlayIntent = new Intent(this, OverlayAlertActivity.class);
+            if (isNetworkAvailable()) {
+                Log.d(TAG, "Network is back available.");
+                overlayIntent.putExtra("success", true);
+            } else {
+                Log.d(TAG, "Network is still unavailable.");
+                overlayIntent.putExtra("success", false);
+            }
+            startActivity(overlayIntent);
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+        }
+    }
+
+    @Override
+    public void networkAvailable() {
+        Log.d(TAG, "Network available.");
+    }
+
+    @Override
+    public void networkUnavailable() {
+        // TODO: Avoid showing this alert very often
+        Log.d(TAG, "Network unavailable.");
+        mAudioManager.playSoundEffect(Sounds.ERROR);
+        Intent noInternetIntent = new Intent(this, NoInternetActivity.class);
+        startActivityForResult(noInternetIntent, REQUEST_NO_INTERNET_ALERT);
+        overridePendingTransition(R.anim.open_animation, R.anim.open_animation);
+    }
+
     public void showResults(String recognizedText) {
         mTextView.setText(mTextView.getText() + " " + recognizedText);
+    }
+
+    private GestureDetector createGestureDetector(Context context) {
+        GestureDetector gestureDetector = new GestureDetector(context);
+        gestureDetector.setBaseListener(new GestureDetector.BaseListener() {
+            @Override
+            public boolean onGesture(Gesture gesture) {
+                if (gesture == Gesture.TAP) {
+                    mAudioManager.playSoundEffect(Sounds.TAP);
+                    openOptionsMenu();
+                    return true;
+                }
+                else if (gesture == Gesture.LONG_PRESS) {
+                    networkUnavailable();
+                    return true;
+                }
+                return false;
+            }
+        });
+        return gestureDetector;
+    }
+
+    private void setInputLanguage(Language lang) {
+        Log.d(TAG, "Input language changed: " + lang);
+        SettingsController.setInputLanguage(lang);
+        mInputLanguage = lang;
+        mRecognizer.setLangCode(lang.getCode());
+        mInputLanguageFlag.setImageDrawable(lang.getFlag());
+        if(!lang.isTranslatable()) setOutputLanguage(Languages.NONE); // TODO: Check null
+    }
+
+    private void setOutputLanguage(Language lang) {
+        SettingsController.setOutputLanguage(lang);
+        mOutputLanguage = lang;
+        if (lang == Languages.NONE) {
+            mOutputLanguageFlag.setImageDrawable(mInputLanguage.getFlag());
+            mRightArrow.setVisibility(View.GONE);
+            mOutputLanguageFlag.setVisibility(View.GONE);
+        }
+        else {
+            mOutputLanguageFlag.setImageDrawable(lang.getFlag());
+            mRightArrow.setVisibility(View.VISIBLE);
+            mOutputLanguageFlag.setVisibility(View.VISIBLE);
+        }
+        Log.d(TAG, "Output language changed: " + lang);
+    }
+
+    private boolean isNetworkAvailable() {
+        NetworkInfo activeNetworkInfo = mConnectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }
