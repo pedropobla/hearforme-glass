@@ -9,9 +9,12 @@ import com.nuance.nmdp.speechkit.Recognizer;
 import com.nuance.nmdp.speechkit.SpeechError;
 import com.nuance.nmdp.speechkit.SpeechKit;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class ContinuousRecognizer implements Runnable, Recognizer.Listener {
 
-    private enum Status {RECORDING, PROCESSING, IDLE};
+    private enum Status {RECORDING, PROCESSING, IDLE}
     private static final String TAG = ContinuousRecognizer.class.getSimpleName();
 
     private volatile boolean running = true, active = true;
@@ -26,8 +29,9 @@ public class ContinuousRecognizer implements Runnable, Recognizer.Listener {
     private Recognizer recognizers[];
     private Status status[];
     private MainActivity mainActivity;
+    private Timer audioLevelTimer;
 
-    public ContinuousRecognizer(MainActivity mainActivity) {
+    public ContinuousRecognizer(final MainActivity mainActivity) {
         this.speechKit = SpeechKit.initialize(mainActivity.getApplication().getApplicationContext(),
                 SPEECH_KIT_APP_ID,
                 SPEECH_KIT_URL,
@@ -39,6 +43,22 @@ public class ContinuousRecognizer implements Runnable, Recognizer.Listener {
         this.langCode = "";
         this.recognizers = new Recognizer[2];
         this.status = new Status[] {Status.IDLE, Status.IDLE};
+        audioLevelTimer = new Timer();
+        audioLevelTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                if (!active) return;
+                if (status[0] == Status.RECORDING) {
+                    mainActivity.onAudioLevelChanged(recognizers[0].getAudioLevel());
+                    Log.d(TAG, String.valueOf(recognizers[0].getAudioLevel()));
+                } else if (status[1] == Status.RECORDING) {
+                    mainActivity.onAudioLevelChanged(recognizers[1].getAudioLevel());
+                    Log.d(TAG, String.valueOf(recognizers[1].getAudioLevel()));
+                } else {
+                    mainActivity.onAudioLevelChanged(0);
+                }
+            }
+        }, 0, mainActivity.getResources().getInteger(R.integer.audio_level_check_rate));
     }
 
     public void setLangCode(String langCode) {
@@ -55,6 +75,7 @@ public class ContinuousRecognizer implements Runnable, Recognizer.Listener {
             Log.d(TAG, "onRecordingBegin 1");
             status[1] = Status.RECORDING;
         }
+        mainActivity.onRecordingBegin();
     }
 
     @Override
@@ -67,13 +88,14 @@ public class ContinuousRecognizer implements Runnable, Recognizer.Listener {
             Log.d(TAG, "onRecordingDone 1");
             status[1] = Status.PROCESSING;
         }
+        mainActivity.onRecordingDone();
     }
 
     @Override
     public void onResults(Recognizer recognizer, Recognition recognition) {
         if (recognition.getResultCount() > 0) {
             Log.d(TAG, "RECOGNIZED TEXT: " + recognition.getResult(0).getText());
-            mainActivity.showResults(recognition.getResult(0).getText());
+            mainActivity.onResults(recognition.getResult(0).getText());
         }
         if (recognizer == recognizers[0]) {
             Log.d(TAG, "onResults 0");
@@ -97,6 +119,8 @@ public class ContinuousRecognizer implements Runnable, Recognizer.Listener {
         }
         Log.d(TAG, "Error " + speechError.getErrorCode() + ": " + speechError.getErrorDetail());
         Log.d(TAG, "Suggestion: " + speechError.getSuggestion());
+        mainActivity.onError(speechError.getErrorCode(), speechError.getErrorDetail(),
+                speechError.getSuggestion());
     }
 
     public void pause() {

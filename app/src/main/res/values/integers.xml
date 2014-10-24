@@ -3,4 +3,5 @@
     <integer name="overlay_successTime">1500</integer>
     <integer name="overlay_failureTime">3000</integer>
     <integer name="gradient_background_radial_radius">200</integer>
+    <integer name="audio_level_check_rate">200</integer>
 </resources>

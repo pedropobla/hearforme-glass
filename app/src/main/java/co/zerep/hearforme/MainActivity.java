@@ -14,8 +14,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.google.android.glass.media.Sounds;
@@ -27,17 +29,31 @@ import co.zerep.hearforme.languages.Languages;
 import co.zerep.hearforme.languages.language.Language;
 import co.zerep.hearforme.settings.SettingsController;
 
-public class MainActivity extends Activity implements NetworkStateReceiver.NetworkStateReceiverListener {
+public class MainActivity extends Activity
+        implements NetworkStateReceiver.NetworkStateReceiverListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int REQUEST_NO_INTERNET_ALERT = 0;
 
+    private boolean running = true;
+
     private GestureDetector mGestureDetector;
     private AudioManager mAudioManager;
+
+    private ScrollView mScrollView;
     private TextView mTextView;
+
+    private ImageView mStatusBar;
+    private ImageView mStatusBackground;
+    private TextView mStatusMessage;
+
     private ImageView mInputLanguageFlag;
     private ImageView mRightArrow;
     private ImageView mOutputLanguageFlag;
+
+    private View mVolumeBarLeft;
+    private View mVolumeBarRight;
+
     private ContinuousRecognizer mRecognizer;
     private Thread mRecognizerThread;
     private Language mInputLanguage;
@@ -60,13 +76,22 @@ public class MainActivity extends Activity implements NetworkStateReceiver.Netwo
 
         setContentView(R.layout.activity_main);
 
+        mScrollView = (ScrollView) findViewById(R.id.main_view_scroll);
+        mScrollView.setSmoothScrollingEnabled(true);
+
         mTextView = (TextView) findViewById(R.id.main_view_text);
         mTextView.setMovementMethod(ScrollingMovementMethod.getInstance());
-        // TODO: Smooth scrolling
+
+        mStatusBar = (ImageView) findViewById(R.id.status_bar);
+        mStatusBackground = (ImageView) findViewById(R.id.status_background);
+        mStatusMessage = (TextView) findViewById(R.id.main_status_text);
 
         mInputLanguageFlag = (ImageView) findViewById(R.id.input_language_flag);
-        mOutputLanguageFlag = (ImageView) findViewById(R.id.output_language_flag);
         mRightArrow = (ImageView) findViewById(R.id.right_arrow);
+        mOutputLanguageFlag = (ImageView) findViewById(R.id.output_language_flag);
+
+        mVolumeBarLeft = findViewById(R.id.volume_bar_left);
+        mVolumeBarRight = findViewById(R.id.volume_bar_right);
 
         mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         mGestureDetector = createGestureDetector(this);
@@ -87,6 +112,7 @@ public class MainActivity extends Activity implements NetworkStateReceiver.Netwo
 
     @Override
     protected void onPause() {
+        running = false;
         if (mRecognizer != null) {
             mRecognizer.pause();
         }
@@ -103,6 +129,8 @@ public class MainActivity extends Activity implements NetworkStateReceiver.Netwo
     @Override
     protected void onResume() {
         super.onResume();
+        running = true;
+        mStatusBar.setVisibility(View.GONE);
         if (mNetworkStateReceiver != null) {
             registerReceiver(mNetworkStateReceiver,
                     new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
@@ -186,16 +214,13 @@ public class MainActivity extends Activity implements NetworkStateReceiver.Netwo
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_NO_INTERNET_ALERT) {
-            Intent overlayIntent = new Intent(this, OverlayAlertActivity.class);
             if (isNetworkAvailable()) {
                 Log.d(TAG, "Network is back available.");
-                overlayIntent.putExtra("success", true);
+                overlayAlert(true, R.string.overlay_success);
             } else {
                 Log.d(TAG, "Network is still unavailable.");
-                overlayIntent.putExtra("success", false);
+                overlayAlert(false, R.string.overlay_failure);
             }
-            startActivity(overlayIntent);
-            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
         }
     }
 
@@ -214,8 +239,68 @@ public class MainActivity extends Activity implements NetworkStateReceiver.Netwo
         overridePendingTransition(R.anim.open_animation, R.anim.open_animation);
     }
 
-    public void showResults(String recognizedText) {
-        mTextView.setText(mTextView.getText() + " " + recognizedText);
+    public void onResults(final String recognizedText) {
+        if (!running) return;
+        mTextView.append(recognizedText + " ");
+        mScrollView.post(new Runnable() {
+            @Override
+            public void run() {
+                mScrollView.fullScroll(View.FOCUS_DOWN);
+            }
+        });
+        mAudioManager.playSoundEffect(Sounds.SUCCESS);
+        mStatusBackground.setVisibility(View.GONE);
+        mStatusMessage.setVisibility(View.GONE);
+        mStatusBar.setVisibility(View.GONE);
+    }
+
+    public void onError(final int errorCode, final String errorDetail, final String suggestion) {
+        if (!running) return;
+        mStatusBackground.setVisibility(View.VISIBLE);
+        mStatusMessage.setText(suggestion);
+        mStatusMessage.setVisibility(View.VISIBLE);
+        mStatusBar.setVisibility(View.GONE);
+        mAudioManager.playSoundEffect(Sounds.DISALLOWED);
+    }
+
+    public void onRecordingBegin() {
+        if (!running) return;
+        mStatusBackground.setVisibility(View.GONE);
+        mStatusMessage.setVisibility(View.GONE);
+        mStatusBar.setVisibility(View.VISIBLE);
+        mStatusBar.setImageDrawable(null);
+        mStatusBar.setBackgroundResource(R.color.green);
+        mAudioManager.playSoundEffect(Sounds.TAP);
+    }
+
+    public void onAudioLevelChanged(float level) {
+        final int height = (int) Math.max(0, (((level - 28.0) / 60.0) * 360));
+        mVolumeBarLeft.post(new Runnable() {
+            @Override
+            public void run() {
+                final ViewGroup.LayoutParams params = mVolumeBarLeft.getLayoutParams();
+                params.height = height;
+                mVolumeBarLeft.setLayoutParams(params);
+            }
+        });
+        mVolumeBarRight.post(new Runnable() {
+            @Override
+            public void run() {
+                final ViewGroup.LayoutParams params = mVolumeBarRight.getLayoutParams();
+                params.height = height;
+                mVolumeBarRight.setLayoutParams(params);
+            }
+        });
+    }
+
+    public void onRecordingDone() {
+        if (!running) return;
+        mStatusBackground.setVisibility(View.GONE);
+        mStatusMessage.setVisibility(View.GONE);
+        mStatusBar.setVisibility(View.VISIBLE);
+        mStatusBar.setBackground(null);
+        mStatusBar.setImageResource(R.drawable.progress_bar);
+        mAudioManager.playSoundEffect(Sounds.TAP);
     }
 
     private GestureDetector createGestureDetector(Context context) {
@@ -228,11 +313,28 @@ public class MainActivity extends Activity implements NetworkStateReceiver.Netwo
                     openOptionsMenu();
                     return true;
                 }
-                else if (gesture == Gesture.LONG_PRESS) {
-                    networkUnavailable();
-                    return true;
-                }
+//                else if (gesture == Gesture.TWO_TAP) {
+//                    mAudioManager.playSoundEffect(Sounds.TAP);
+//                    networkUnavailable();
+//                    return true;
+//                }
                 return false;
+            }
+        });
+        gestureDetector.setScrollListener(new GestureDetector.ScrollListener() {
+            @Override
+            public boolean onScroll(float displacement, float delta, float velocity) {
+//                Log.d(TAG, "scrollY = " + mTextView.getScrollY());
+//                Log.d(TAG, "bottom  = " + mTextView.getBottom());
+//                Log.d(TAG, "height  = " + mTextView.getText());
+//                Log.d(TAG, "# lines = " + mTextView.getLineCount());
+                mScrollView.smoothScrollBy(0, (int) delta / 2);
+//                if (mTextView.getScrollY() > mTextView.getHeight())
+//                    mTextView.setScrollY(mTextView.getHeight());
+//                if (mTextView.getScrollY() < mTextView.getTop())
+//                    mTextView.setScrollY(mTextView.getTop());
+                //Log.d(TAG, "[" + mScrollView.getScrollX() + ", " + mScrollView.getScrollY() + "], Scroll: (disp = " + displacement + ")");
+                return true;
             }
         });
         return gestureDetector;
@@ -261,6 +363,14 @@ public class MainActivity extends Activity implements NetworkStateReceiver.Netwo
             mOutputLanguageFlag.setVisibility(View.VISIBLE);
         }
         Log.d(TAG, "Output language changed: " + lang);
+    }
+
+    private void overlayAlert(boolean success, int textId) {
+        Intent overlayIntent = new Intent(this, OverlayAlertActivity.class);
+        overlayIntent.putExtra("success", success);
+        overlayIntent.putExtra("textId", textId);
+        startActivity(overlayIntent);
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
     }
 
     private boolean isNetworkAvailable() {

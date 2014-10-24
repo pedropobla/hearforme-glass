@@ -34,19 +34,18 @@ public class OverlayAlertActivity extends Activity {
         };
 
         boolean success = getIntent().getExtras().getBoolean("success");
+        int textId = getIntent().getExtras().getInt("textId"); // text to show in the overlay alert
+
         int iconId; // icon to show in the overlay alert
-        int textId; // text to show in the overlay alert
         int soundId; // sound to play when the alert is shown
         int activeTime; // duration (in ms) of the alert. The activity will be finished afterwards.
 
         if (success) {
             soundId = Sounds.SUCCESS;
-            textId = R.string.overlay_success;
             iconId = R.drawable.ic_done_150_green_trans;
             activeTime = R.integer.overlay_successTime;
         } else {
             soundId = Sounds.DISALLOWED;
-            textId = R.string.overlay_failure;
             iconId = R.drawable.ic_no_150_red_trans;
             activeTime = R.integer.overlay_failureTime;
         }
