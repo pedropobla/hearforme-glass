@@ -313,27 +313,13 @@ public class MainActivity extends Activity
                     openOptionsMenu();
                     return true;
                 }
-//                else if (gesture == Gesture.TWO_TAP) {
-//                    mAudioManager.playSoundEffect(Sounds.TAP);
-//                    networkUnavailable();
-//                    return true;
-//                }
                 return false;
             }
         });
         gestureDetector.setScrollListener(new GestureDetector.ScrollListener() {
             @Override
             public boolean onScroll(float displacement, float delta, float velocity) {
-//                Log.d(TAG, "scrollY = " + mTextView.getScrollY());
-//                Log.d(TAG, "bottom  = " + mTextView.getBottom());
-//                Log.d(TAG, "height  = " + mTextView.getText());
-//                Log.d(TAG, "# lines = " + mTextView.getLineCount());
                 mScrollView.smoothScrollBy(0, (int) delta / 2);
-//                if (mTextView.getScrollY() > mTextView.getHeight())
-//                    mTextView.setScrollY(mTextView.getHeight());
-//                if (mTextView.getScrollY() < mTextView.getTop())
-//                    mTextView.setScrollY(mTextView.getTop());
-                //Log.d(TAG, "[" + mScrollView.getScrollX() + ", " + mScrollView.getScrollY() + "], Scroll: (disp = " + displacement + ")");
                 return true;
             }
         });
@@ -344,6 +330,7 @@ public class MainActivity extends Activity
         Log.d(TAG, "Input language changed: " + lang);
         SettingsController.setInputLanguage(lang);
         mInputLanguage = lang;
+        mRecognizer.stopRecording();
         mRecognizer.setLangCode(lang.getCode());
         mInputLanguageFlag.setImageDrawable(lang.getFlag());
         if(!lang.isTranslatable()) setOutputLanguage(Languages.NONE); // TODO: Check null

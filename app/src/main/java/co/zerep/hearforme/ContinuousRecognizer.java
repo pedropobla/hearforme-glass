@@ -50,10 +50,8 @@ public class ContinuousRecognizer implements Runnable, Recognizer.Listener {
                 if (!active) return;
                 if (status[0] == Status.RECORDING) {
                     mainActivity.onAudioLevelChanged(recognizers[0].getAudioLevel());
-                    Log.d(TAG, String.valueOf(recognizers[0].getAudioLevel()));
                 } else if (status[1] == Status.RECORDING) {
                     mainActivity.onAudioLevelChanged(recognizers[1].getAudioLevel());
-                    Log.d(TAG, String.valueOf(recognizers[1].getAudioLevel()));
                 } else {
                     mainActivity.onAudioLevelChanged(0);
                 }
@@ -121,6 +119,14 @@ public class ContinuousRecognizer implements Runnable, Recognizer.Listener {
         Log.d(TAG, "Suggestion: " + speechError.getSuggestion());
         mainActivity.onError(speechError.getErrorCode(), speechError.getErrorDetail(),
                 speechError.getSuggestion());
+    }
+
+    public void stopRecording() {
+        for (Recognizer recognizer : recognizers) {
+            if (recognizer != null) {
+                recognizer.stopRecording();
+            }
+        }
     }
 
     public void pause() {
